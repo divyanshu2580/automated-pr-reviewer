@@ -1,52 +1,36 @@
-name: Automated PR Review Agent
+name: Automated PR Review
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  analyze:
-    name: Analyze PR
+  review:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      - name: Install analysis tool(s)
-        run: pip install semgrep
-      - name: Run static analysis
-        run: |
-          semgrep --config auto  --json --output result.json || true
-      - name: Save results
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-analysis
-          path: result.json
 
-  comment:
-    name: Comment on PR
-    needs: analyze
-    runs-on: ubuntu-latest
-    if: always()      # so comment even if analysis fails
-    on: pull_request_target
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Download analysis results
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-analysis
-      - name: Post comment
+      - name: Install analysis tool(s)
+        run: |
+          pip install semgrep
+
+      - name: Run static analysis / review logic
+        run: |
+          semgrep --config auto  # or your custom config / tool
+
+      - name: Comment on PR with results
         uses: thollander/actions-comment-pull-request@v3
+        if: always()
         with:
           message: |
             ## 🔎 Automated Review Results  
-            <details>
-            <summary>Click to expand</summary>
-
-            ```json
-            ${{ fromJson(steps.download.outputs.content) }}
-            ```
-            </details>
+            Static analysis done!! 
