@@ -33,4 +33,4 @@ jobs:
         with:
           message: |
             ## 🔎 Automated Review Results  
-            Static analysis done — (you can customize this message)
+            Static analysis done!! 
