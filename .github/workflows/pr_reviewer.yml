@@ -26,6 +26,7 @@ jobs:
       - name: Run static analysis / review logic
         run: |
           semgrep --config auto  # or your custom config / tool
+          
 
       - name: Comment on PR with results
         uses: thollander/actions-comment-pull-request@v3
