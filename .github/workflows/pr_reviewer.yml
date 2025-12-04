@@ -12,9 +12,15 @@ jobs:
       pull-requests: write
 
     steps:
+      # ---------------------------
+      # Checkout
+      # ---------------------------
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
 
+      # ---------------------------
+      # Python setup
+      # ---------------------------
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
@@ -25,14 +31,16 @@ jobs:
           pip install semgrep google-genai PyGithub requests
 
       # ---------------------------
-      # Run Semgrep
+      # Semgrep
       # ---------------------------
       - name: 🔍 Run Semgrep analysis
         run: |
           semgrep --config auto --json > semgrep_output.json || true
+        env:
+          SEMGREP_CONFIG: auto
 
       # ---------------------------
-      # Extract PR Diff
+      # Fetch PR diff
       # ---------------------------
       - name: 📄 Fetch PR Diff
         id: diff
@@ -42,8 +50,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Run Gemini PR Summarizer
-
+      # ---------------------------
+      # Run Gemini LLM Review
+      # ---------------------------
       - name: 🧠 Generate PR Summary
         id: llm
         env:
@@ -51,20 +60,21 @@ jobs:
           REPO_FULL_NAME: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEMGREP_CONFIG: auto
         run: |
-          SUMMARY=$(python llm.py)
+          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
           echo "summary<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SUMMARY" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
+      # ---------------------------
       # Comment on PR
-
+      # ---------------------------
       - name: 💬 Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         if: always()
         with:
           message: |
             ## 🤖 Automated PR Review
-
-            ### 🧠 **Pull Request Summary**
+            ### 🧠 Pull Request Summary
             ${{ steps.llm.outputs.summary }}
