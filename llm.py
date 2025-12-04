@@ -1,16 +1,23 @@
 import os
 import sys
-import json
 from github import Github, Auth
 from google import genai
+import json
 
-# Arguments from workflow
-diff_path = sys.argv[1]
-semgrep_path = sys.argv[2]
+# Load env vars
+api_key = os.getenv("GEMINI_API_KEY")
+repo_full = os.getenv("REPO_FULL_NAME")
+pr_number = int(os.getenv("PR_NUMBER"))
+github_token = os.getenv("GITHUB_TOKEN")
 
-# Load diff content
-with open(diff_path, "r", encoding="utf-8") as f:
-    diff_content = f.read()
+# Read inputs safely -----------------------------------------
+diff_path = sys.argv[1] if len(sys.argv) > 1 else None
+semgrep_path = sys.argv[2] if len(sys.argv) > 2 else None
+
+diff_content = ""
+if diff_path and os.path.exists(diff_path):
+    with open(diff_path, "r", encoding="utf-8") as f:
+        diff_content = f.read()
 
 # Load Semgrep output
 try:
