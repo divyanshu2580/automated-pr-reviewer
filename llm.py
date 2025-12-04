@@ -22,17 +22,40 @@ files_summary = "\n".join(
 pr_title = pr.title
 pr_description = pr.body or "No description provided."
 
-# Build LLM prompt
 prompt = f"""
-You are an expert PR reviewer.
-Write a medium-length but detailed PR summary including:
+You are an expert Senior Software Engineer performing an in-depth Pull Request review.
 
-- What the PR changes
-- Why these changes matter
-- Summary of added/removed/updated files
-- Potential risks
-- Suggestions for improvement
-- Missing tests or validations
+Your task:
+Write a **Automated PR summary** using GitHub Markdown.
+
+### Output Format (IMPORTANT)
+Follow this exact format:
+
+## 📝 PR Summary
+(1 short paragraph overview)
+
+## 📂 Changed Files
+- File name (added/removed/modified)
+- Line summary (+ additions / - deletions)
+
+## 🔍 What This PR Changes
+(2–5 bullet points)
+
+## 🎯 Why These Changes Matter
+(2–4 bullet points)
+
+## ⚠️ Risks & Impact
+(1–3 bullet points)
+
+## 🧪 Tests & Validation
+- Missing tests?
+- Required validations?
+- Suggested test cases.
+
+## 💡 Recommendations
+(2–4 bullet points of suggestions)
+
+Use **professional tone**, **no unnecessary text**, **no repetition**.
 
 PR Title:
 {pr_title}
@@ -42,8 +65,6 @@ PR Description:
 
 Changed Files:
 {files_summary}
-
-Respond in clean GitHub Markdown.
 """
 
 # Gemini client (NEW API)
@@ -53,5 +74,8 @@ response = client.models.generate_content(
     model="gemini-2.0-flash",
     contents=prompt
 )
+
+clean_text = response.text.strip()
+print(clean_text)
 
 print(response.text)
