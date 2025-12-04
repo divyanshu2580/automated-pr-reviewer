@@ -63,13 +63,16 @@ You are an expert senior code reviewer. Your summary MUST be based ONLY on the a
 ### STRICT OUTPUT FORMAT
 
 ### Summary
-- 2–3 bullets describing concrete changes in the diff.
+- 2–5 bullets describing concrete changes in the diff. if the changes are more add more bullets.
 
 ### Why It Matters
-- 1–2 bullets based ONLY on the diff.
+- 1–2 bullets based ONLY on the diff.  if the changes are more add more bullets.
 
 ### Issues
-- Real issues from diff or Semgrep. Write "None" if nothing.
+- Real issues from diff or Semgrep. Write "No issues found" if nothing.
+
+### Analysis
+- Configuration report of semgrep of that diff
 
 ### Verdict
 - Approve / Needs Fixes / Review Required.
@@ -78,13 +81,12 @@ You are an expert senior code reviewer. Your summary MUST be based ONLY on the a
 - LOW / MEDIUM / HIGH.
 
 ### Recommendations
-- Max 2 bullets based ONLY on the diff.
+- Max 2 bullets based ONLY on the diff. if the changes are more add more bullets.
 
 RULES:
 - NEVER invent details.
 - NEVER provide generic statements.
 - If not visible in diff, say: "Not visible in diff".
-- Max length: 120 words.
 """
 
 client = genai.Client(api_key=api_key)
