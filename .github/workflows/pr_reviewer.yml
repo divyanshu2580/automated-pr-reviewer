@@ -1,4 +1,4 @@
-name: 🤖 Automated PR Review
+name: 🤖 Automated PR Reviewer
 
 on:
   pull_request:
@@ -66,5 +66,5 @@ jobs:
           message: |
             ## 🤖 Automated PR Review
 
-            ### 🧠 **Automated PR Summary**
+            ### 🧠 **Pull Request Summary**
             ${{ steps.llm.outputs.summary }}
