@@ -85,7 +85,7 @@ Your job is to summarize the PR based STRICTLY on the diff and Semgrep report.
 ### Issues
 - Real issues from diff or Semgrep. Write "No issues found" if nothing.
 
-### Semgrep Report
+### Analysis Report
 (Rewrite & present the Semgrep report you received above in clean bullet style.)
 
 ### Verdict
@@ -100,6 +100,7 @@ Your job is to summarize the PR based STRICTLY on the diff and Semgrep report.
 RULES:
 - No generic text.
 - No hallucinations.
+- Must not use  any tool name or any thing working behind the scenes in the report.
 - MUST stay under 140 words.
 - Semgrep section MUST appear in final output.
 """
