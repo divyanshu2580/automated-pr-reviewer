@@ -30,21 +30,31 @@ def format_semgrep(findings):
     if not findings:
         return "No Semgrep issues found."
 
-    formatted = []
+    grouped = {}
     for f in findings:
-        rule = f.get("check_id", "unknown-rule")
-        msg = f.get("extra", {}).get("message", "")
-        sev = f.get("extra", {}).get("severity", "UNKNOWN")
-        path = f.get("path", "unknown-file")
-        line = f.get("start", {}).get("line", "?")
+        sev = f.get("extra", {}).get("severity", "UNKNOWN").upper()
+        grouped.setdefault(sev, []).append(f)
 
-        formatted.append(
-            f"- **Rule:** {rule}\n"
-            f"  **Severity:** {sev}\n"
-            f"  **Message:** {msg}\n"
-            f"  **Location:** {path}:{line}"
-        )
-    return "\n".join(formatted)
+    output = []
+    for severity in ["ERROR", "WARNING", "INFO", "UNKNOWN"]:
+        if severity not in grouped:
+            continue
+
+        output.append(f"\n### {severity} Findings")
+        for item in grouped[severity]:
+            rule = item.get("check_id", "unknown-rule")
+            msg = item.get("extra", {}).get("message", "")
+            file = item.get("path", "unknown-file")
+            line = item.get("start", {}).get("line", "?")
+
+            output.append(
+                f"- Rule: {rule}\n"
+                f"  Message: {msg}\n"
+                f"  File: {file}\n"
+                f"  Line: {line}"
+            )
+
+    return "\n".join(output).strip()
 
 # Load Semgrep JSON
 semgrep_summary = "No Semgrep issues found."
@@ -84,9 +94,6 @@ concise, structured summary of the Pull Request (PR) based on the provided code 
 
 ### Issues
 - Real issues from diff or Semgrep. Write "No issues found" if nothing.
-
-### Analysis Report
-(Rewrite & present the Semgrep report you received above in clean bullet style.)
 
 ### Verdict
 - Approve / Needs Fixes / Review Required.
