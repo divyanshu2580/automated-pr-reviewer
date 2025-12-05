@@ -108,11 +108,11 @@ You are an expert technical PR reviewer.
 
 ### REQUIRED OUTPUT FORMAT (max 140 words)
 
-### Analysis Report
-- Bullet summary of grouped findings (use ERROR, WARNING, INFO)
-
 ### Summary
 - 2–3 bullets describing concrete changes. if changes are more add more bullets.
+
+### Analysis Report
+- Bullet summary of grouped findings (use ERROR, WARNING, INFO)
 
 ### Why It Matters
 - Real reasoning based on diff. if changes are more add more bullets.
