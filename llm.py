@@ -113,10 +113,8 @@ Your job is to give a **compact 100-word max** review that is:
 
 ## You MUST produce output EXACTLY in this format:
 
-## Summary of Actual Changes
-- State exactly what changed, referring only to diff.
 
-## Impact on This Repository
+## Impact 
 - Describe actual effects based ONLY on visible code.
 
 ## Issues / Risks Found
@@ -129,6 +127,9 @@ Your job is to give a **compact 100-word max** review that is:
 - ONLY fixes backed by diff or Semgrep.
 - Use precise file/line references when possible.
 - If none → write: “No fixes required.”
+
+## Summary 
+- State exactly what changed, referring only to diff.
 
 You MUST stay under 100 words.
 You MUST NOT add extra sections or commentary.
