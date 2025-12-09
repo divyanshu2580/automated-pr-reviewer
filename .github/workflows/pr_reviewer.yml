@@ -54,6 +54,12 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Upload Analysis JSON Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-analysis-json
+          path: analysis_output/*.json
+
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         with:
