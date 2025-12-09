@@ -14,7 +14,7 @@ jobs:
 
     steps:
 
-      - name: Checkout code
+      - name: Checkout PR code
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -28,7 +28,8 @@ jobs:
 
       - name: Run Semgrep
         run: |
-          semgrep --config auto --json > semgrep_output.json || true
+          mkdir -p analysis_output
+          semgrep --config auto --json > analysis_output/semgrep_output.json || true
         env:
           SEMGREP_CONFIG: auto
 
@@ -44,28 +45,39 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SEMGREP_CONFIG: auto
         run: |
-          OUTPUT=$(python llm.py pr_diff.patch semgrep_output.json)
+          OUTPUT=$(python llm.py pr_diff.patch analysis_output/semgrep_output.json)
           {
             echo "summary<<EOF"
             echo "$OUTPUT"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Save Semgrep Metadata to Repo
+      # ---------------------------------------
+      #  SAVE SEMGREP REPORT INTO MAIN BRANCH
+      # ---------------------------------------
+      - name: Save Semgrep Report to MAIN branch
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch latest main branch
+          git fetch origin main
+          git checkout main
+
           mkdir -p semgrep_reports
           DATE=$(date +"%Y-%m-%d")
-          cp analysis_output/semgrep_metadata.json "semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json"
 
-      - name: Commit JSON to Repo
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
-          file_pattern: "semgrep_reports/*.json"
+          # Copy report from PR workspace to main branch
+          cp analysis_output/semgrep_output.json \
+             semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json
+
+          git add semgrep_reports/
+          git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
+          git push origin main
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
-            ## Automated PR Review
+            ## 🤖 Automated PR Review
             ${{ steps.llm.outputs.summary }}
