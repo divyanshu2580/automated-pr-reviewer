@@ -133,6 +133,7 @@ Your job is to give a **compact 100-word max** review that is:
 You MUST stay under 100 words.
 You MUST NOT add extra sections or commentary.
 """
+
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
