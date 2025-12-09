@@ -29,9 +29,10 @@ jobs:
       - name: Run Semgrep
         run: |
           mkdir -p analysis_output
-          semgrep --config auto --json > analysis_output/semgrep_output.json || true
+          semgrep scan --config=p/ci --json --output analysis_output/semgrep_output.json || true
         env:
-          SEMGREP_CONFIG: auto
+          SEMGREP_CONFIG: p/ci
+
 
       - name: Fetch PR Diff
         run: gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
