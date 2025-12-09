@@ -1,0 +1,63 @@
+{
+  "version": "1.145.0",
+  "configs": null,
+  "rules": null,
+  "paths_scanned": [
+    ".github/workflows/pr_reviewer.yml",
+    "README.md",
+    "__init__.py",
+    "agent.py",
+    "llm.py",
+    "semgrep_output.json",
+    "semgrep_reports/test.txt"
+  ],
+  "errors": [
+    {
+      "code": 3,
+      "level": "warn",
+      "type": "Syntax error",
+      "message": "Syntax error at line semgrep_output.json:1:\n missing element",
+      "path": "semgrep_output.json"
+    },
+    {
+      "code": 3,
+      "level": "warn",
+      "type": [
+        "PartialParsing",
+        [
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 57,
+              "col": 63,
+              "offset": 1341
+            },
+            "end": {
+              "line": 57,
+              "col": 97,
+              "offset": 1375
+            }
+          }
+        ]
+      ],
+      "message": "Syntax error at line .github/workflows/pr_reviewer.yml:57:\n When parsing a snippet as Bash for metavariable-pattern in rule 'yaml.github-actions.security.curl-eval.curl-eval', `{ github.event.pull_request.number` was unexpected",
+      "path": ".github/workflows/pr_reviewer.yml",
+      "spans": [
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 57,
+            "col": 63,
+            "offset": 1341
+          },
+          "end": {
+            "line": 57,
+            "col": 97,
+            "offset": 1375
+          }
+        }
+      ]
+    }
+  ],
+  "total_findings": 0
+}
