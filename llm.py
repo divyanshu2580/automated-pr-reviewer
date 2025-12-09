@@ -61,49 +61,69 @@ def load_repo_context_dynamic(root=".", diff_text=""):
 
 repo_context = load_repo_context_dynamic(".", diff_content)
 
-Prompt = f"""
-You are an expert PR reviewer. You MUST base your review ONLY on:
+prompt='''You are an expert PR reviewer with strict rules.  
+You MUST generate your review ONLY from the following inputs:
 
-1. Actual PR diff
-2. Semgrep findings (full results)
-3. Repository context (only relevant files)
+1. **PR DIFF (actual code changes)**
+2. **Semgrep RESULTS (raw findings — not metadata)**
+3. **REPO CONTEXT (only files touched in the diff)**
 
-Never write generic advice. Only comment on **real issues proven by Semgrep or seen in the diff**.
+You are FORBIDDEN from:
+- Making assumptions about code not shown.
+- Giving generic advice (e.g., “add logging”, “improve docs”).
+- Mentioning best practices unless clearly violated in the diff.
+- Fabricating repo structure, files, or behavior.
+- Ignoring Semgrep findings.
 
-# PR DIFF
+If Semgrep finds NOTHING, you MUST say there are **no Semgrep-based issues**.
+
+If the diff shows NO problems, you MUST say **no issues found in diff**.
+
+Your job is to give a **compact 100-word max** review that is:
+- Precise
+- Based on real evidence
+- Tied to specific files/lines
+- Non-generic
+
+---
+
+## INPUT: PR DIFF
 {diff_content}
 
-# SEMGREP FINDINGS (full results)
+## INPUT: SEMGREP FINDINGS (raw)
 {json.dumps(semgrep_json.get("results", []), indent=2)}
 
-# REPO CONTEXT (only files touched)
+## INPUT: REPO CONTEXT (files touched)
 {json.dumps(repo_context, indent=2)}
 
-Respond using EXACTLY this format:
+---
+
+## You MUST produce output EXACTLY in this format:
 
 ## Summary of Actual Changes
-- Describe what changed in the PR.
+- State exactly what changed, referring only to diff.
 
 ## Impact on This Repository
-- Explain how these changes affect the repo’s behavior or files.
+- Describe actual effects based ONLY on visible code.
 
 ## Issues / Risks Found
-- Pull issues ONLY from:
-  - Semgrep findings
-  - Actual diff issues (bugs, logic problems)
+- ONLY list:
+  - Semgrep findings (cite rule_id)
+  - Real bugs visible in diff.
+- If none → write: “No issues found.”
 
 ## Required Fixes
-- Fixes must reference exact lines, files, or Semgrep rules.
-- No generic security advice.
-- No assumptions beyond the diff/context.
+- ONLY fixes backed by diff or Semgrep.
+- Use precise file/line references when possible.
+- If none → write: “No fixes required.”
 
-Output MUST be under 100 words. No extra text.
-"""
-
+You MUST stay under 100 words.
+You MUST NOT add extra sections or commentary.
+'''
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=Prompt,
+    contents=prompt,
 )
 
 print(response.text.strip())
