@@ -61,21 +61,7 @@ def load_repo_context_dynamic(root=".", diff_text=""):
 
 repo_context = load_repo_context_dynamic(".", diff_content)
 
-Prompt =  """ You are an expert PR reviewer with strict rules.  
-You MUST generate your review ONLY from the following inputs:
-
-1. **PR DIFF (actual code changes)**
-2. **Semgrep RESULTS (raw findings — not metadata)**
-3. **REPO CONTEXT (only files touched in the diff)**
-
-You are FORBIDDEN from:
-- Making assumptions about code not shown.
-- Giving generic advice (e.g., “add logging”, “improve docs”).
-- Mentioning best practices unless clearly violated in the diff.
-- Fabricating repo structure, files, or behavior.
-- Ignoring Semgrep findings.
-
-Prompt = f"""
+Prompt =  """ 
 You are an expert PR reviewer with strict rules.  
 You MUST generate your review ONLY from the following inputs:
 
@@ -133,11 +119,8 @@ Your job is to give a **compact 100-word max** review that is:
 
 You MUST stay under 100 words.
 You MUST NOT add extra sections or commentary.
-<<<<<<< Updated upstream
-=======
-"""
 
->>>>>>> Stashed changes
+"""
 
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
