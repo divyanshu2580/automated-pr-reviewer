@@ -61,7 +61,7 @@ def load_repo_context_dynamic(root=".", diff_text=""):
 
 repo_context = load_repo_context_dynamic(".", diff_content)
 
-prompt='''You are an expert PR reviewer with strict rules.  
+Prompt =  """ You are an expert PR reviewer with strict rules.  
 You MUST generate your review ONLY from the following inputs:
 
 1. **PR DIFF (actual code changes)**
@@ -100,7 +100,6 @@ Your job is to give a **compact 100-word max** review that is:
 - Tied to specific files/lines
 - Non-generic
 
----
 
 ## INPUT: PR DIFF
 {diff_content}
@@ -134,11 +133,16 @@ Your job is to give a **compact 100-word max** review that is:
 
 You MUST stay under 100 words.
 You MUST NOT add extra sections or commentary.
+<<<<<<< Updated upstream
+=======
+"""
+
+>>>>>>> Stashed changes
 
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=prompt,
+    contents=Prompt,
 )
 
 print(response.text.strip())
