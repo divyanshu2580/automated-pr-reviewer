@@ -52,28 +52,25 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # ---------------------------------------
-      #  SAVE SEMGREP REPORT INTO MAIN BRANCH
-      # ---------------------------------------
       - name: Save Semgrep Report to MAIN branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Fetch latest main branch
           git fetch origin main
           git checkout main
 
           mkdir -p semgrep_reports
           DATE=$(date +"%Y-%m-%d")
 
-          # Copy report from PR workspace to main branch
-          cp analysis_output/semgrep_output.json \
-             semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json
+          # Pretty print JSON using jq
+          jq '.' analysis_output/semgrep_output.json \
+            > semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json
 
           git add semgrep_reports/
           git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
           git push origin main
+
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
