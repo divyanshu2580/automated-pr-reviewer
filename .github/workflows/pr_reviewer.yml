@@ -33,8 +33,7 @@ jobs:
           SEMGREP_CONFIG: auto
 
       - name: Fetch PR Diff
-        run: |
-          gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
+        run: gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,30 +41,27 @@ jobs:
         id: llm
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          REPO_FULL_NAME: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_CONFIG: auto
         run: |
-          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
+          OUTPUT=$(python llm.py pr_diff.patch semgrep_output.json)
           {
             echo "summary<<EOF"
-            echo "$SUMMARY"
+            echo "$OUTPUT"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Save Semgrep Metadata to Repo Folder
+      - name: Save Semgrep Metadata to Repo
         run: |
-          mkdir -p .semgrep_reports
+          mkdir -p semgrep_reports
           DATE=$(date +"%Y-%m-%d")
-          FILE=".semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json"
-          cp analysis_output/semgrep_metadata.json "$FILE"
+          cp analysis_output/semgrep_metadata.json "semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json"
 
-      - name: Commit JSON into Repo
+      - name: Commit JSON to Repo
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
-          file_pattern: ".semgrep_reports/*.json"
+          file_pattern: "semgrep_reports/*.json"
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
