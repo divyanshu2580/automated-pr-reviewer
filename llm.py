@@ -40,82 +40,66 @@ os.makedirs("analysis_output", exist_ok=True)
 with open("analysis_output/semgrep_metadata.json", "w", encoding="utf-8") as f:
     json.dump(analysis_metadata, f, indent=2)
 
-def load_repo_context_dynamic(root="."):
+def load_repo_context_dynamic(root=".", diff_text=""):
     context = {}
-    max_file_size = 200000            
-    max_text_read = 60000             
-    text_extensions = [
-        ".py", ".md", ".txt", ".yaml", ".yml", ".json", ".toml",
-        ".js", ".ts", ".tsx", ".jsx", ".html", ".css", ".sh",
-        ".ini", ".cfg", ".env"
-    ]
+    affected_files = set()
 
-    for dirpath, _, filenames in os.walk(root):
-        if ".git" in dirpath:
-            continue
+    for line in diff_text.splitlines():
+        if line.startswith("+++ b/"):
+            filepath = line.replace("+++ b/", "").strip()
+            affected_files.add(filepath)
 
-        for filename in filenames:
-            path = os.path.join(dirpath, filename)
-
-            if not any(filename.endswith(ext) for ext in text_extensions):
-                continue
-            if os.path.getsize(path) > max_file_size:
-                continue
-
+    for fp in affected_files:
+        if os.path.exists(fp):
             try:
-                with open(path, "r", encoding="utf-8") as f:
-                    context[path] = f.read()[:max_text_read]
+                with open(fp, "r", encoding="utf-8") as f:
+                    context[fp] = f.read()[:4000]
             except:
-                continue
+                pass
 
     return context
 
-
-repo_context = load_repo_context_dynamic()
+repo_context = load_repo_context_dynamic(".", diff_content)
 
 Prompt = f"""
-You are an expert PR reviewer who fully understands this repository.
-You must generate highly specific feedback based only on:
-- Real repository context (every file scanned automatically)
-- Actual PR diff
-- Semgrep metadata
+You are an expert PR reviewer. You MUST base your review ONLY on:
 
-Do not give generic suggestions.
-Do not hallucinate missing functionality.
+1. Actual PR diff
+2. Semgrep findings (full results)
+3. Repository context (only relevant files)
 
-REPOSITORY CONTEXT (auto-scanned)
-{json.dumps(repo_context, indent=2)}
+Never write generic advice. Only comment on **real issues proven by Semgrep or seen in the diff**.
 
-PR DIFF
+# PR DIFF
 {diff_content}
 
-SEMGREP METADATA
-{json.dumps(analysis_metadata, indent=2)}
+# SEMGREP FINDINGS (full results)
+{json.dumps(semgrep_json.get("results", []), indent=2)}
 
-Your Responsibilities:
-- Provide an accurate, context-aware PR review.
-- Reference the specific files and logic touched in the PR.
-- Explain real architectural, functional, or workflow impact.
-- Identify bugs, risks, regressions, security concerns only if present.
-- Do not assume behavior not shown in the repo context.
-Final Output Format (max 100 words)
+# REPO CONTEXT (only files touched)
+{json.dumps(repo_context, indent=2)}
+
+Respond using EXACTLY this format:
 
 ## Summary of Actual Changes
-- Describe exactly what the PR changed with respect to repository.
+- Describe what changed in the PR.
 
 ## Impact on This Repository
-- Explain how the changes affect workflows, functionality, or architecture with respect to repository.
+- Explain how these changes affect the repo’s behavior or files.
 
 ## Issues / Risks Found
-- Only list actual issues visible in diff or repo context .
+- Pull issues ONLY from:
+  - Semgrep findings
+  - Actual diff issues (bugs, logic problems)
 
 ## Required Fixes
-- Only list fixes specific to this PR with respect to repository.
+- Fixes must reference exact lines, files, or Semgrep rules.
+- No generic security advice.
+- No assumptions beyond the diff/context.
 
-Do not output anything outside this format.
-Do not give the output more than  100 words 
-keep it small 
+Output MUST be under 100 words. No extra text.
 """
+
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
