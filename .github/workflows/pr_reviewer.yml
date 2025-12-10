@@ -26,7 +26,7 @@ jobs:
         run: |
           pip install google-genai PyGithub semgrep requests jq
 
-      - name: Run Semgrep (Auto config - always works)
+      - name: Run Semgrep (Auto config)
         run: |
           mkdir -p analysis_output
           semgrep scan \
@@ -35,24 +35,27 @@ jobs:
             --output analysis_output/semgrep_output.json || true
 
       - name: Fetch PR Diff
-        run: gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
 
       - name: Generate PR Summary & Metadata
         id: llm
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          # Export environment variables so Python receives them
+          export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          export PR_NUMBER="${{ github.event.pull_request.number }}"
+
           OUTPUT=$(python llm.py pr_diff.patch analysis_output/semgrep_output.json)
+
           {
             echo "summary<<EOF"
             echo "$OUTPUT"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Save Semgrep Report to MAIN branch
+      - name: Save Semgrep Report to Main Branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -64,7 +67,8 @@ jobs:
           DATE=$(date +"%Y-%m-%d")
           TIME=$(date +"%H-%M-%S")
 
-          jq '.' analysis_output/semgrep_output.json > "semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}_${TIME}.json"
+          jq '.' analysis_output/semgrep_output.json \
+            > "semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}_${TIME}.json"
 
           git add semgrep_reports/
           git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}" || echo "No changes to commit"

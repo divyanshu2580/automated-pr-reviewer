@@ -4,7 +4,8 @@ import json
 from google import genai
 
 api_key = os.getenv("GEMINI_API_KEY")
-pr_number = int(os.getenv("PR_NUMBER"))
+pr_raw = os.getenv("PR_NUMBER")
+pr_number = int(pr_raw) if pr_raw and pr_raw.isdigit() else -1
 semgrep_config = os.getenv("SEMGREP_CONFIG", "auto")
 
 diff_path = sys.argv[1] if len(sys.argv) > 1 else None
