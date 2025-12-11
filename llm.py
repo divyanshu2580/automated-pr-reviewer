@@ -115,7 +115,7 @@ OUTPUT EXACTLY IN THIS FORMAT:
 - give 1 to 2 buillet points 
 
 ## Summary
-- Exact description of what changed.
+- Small description of the new pull request or the new files/file added.
 - give 2 to 4 buillet points 
 """
 
