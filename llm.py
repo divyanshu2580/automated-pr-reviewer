@@ -115,7 +115,7 @@ OUTPUT EXACTLY IN THIS FORMAT:
 - give 1 to 2 buillet points 
 
 ## Summary
-- Description of the new pull request or the new files/file added in  2 to 4 buillet points 
+- Description of the new files/file added in  2 to 4 buillet points 
 """
 
 client = genai.Client(api_key=api_key)
