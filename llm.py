@@ -107,7 +107,7 @@ OUTPUT EXACTLY IN THIS FORMAT:
 - Analysis Findings (rule)
 - Real bugs from diff
 - If none: “No issues found.”
-- give 2 to 4 buillet points 
+- give 2 to 3 buillet points 
 
 ## Required Fixes
 - Only fixes backed by diff or Semgrep
